@@ -17,15 +17,16 @@ public sealed class EventClassificationEngine
             2.4;
 
         var probability = 1.0 / (1.0 + Math.Exp(-linearScore));
+        var probabilityPercent = probability * 100.0;
 
-        var category = probability switch
+        var category = probabilityPercent switch
         {
-            >= 0.80 => "High",
-            >= 0.60 => "Medium",
+            >= 80.0 => "High",
+            >= 60.0 => "Medium",
             _ => "Low"
         };
 
-        return (probability, category);
+        return (probabilityPercent, category);
     }
 
     private static double Normalize(double value, double min, double max)

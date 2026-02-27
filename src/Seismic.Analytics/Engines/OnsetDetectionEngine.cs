@@ -10,9 +10,19 @@ public sealed class OnsetDetectionEngine
         double k = 4.0,
         int sustainedSamples = 5)
     {
-        if (samples.Count == 0)
+        if (samples.Count < 2)
         {
-            throw new ArgumentException("Samples are required.", nameof(samples));
+            throw new ArgumentException("At least 2 samples are required.", nameof(samples));
+        }
+
+        if (sustainedSamples <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(sustainedSamples), "Sustained sample window must be greater than 0.");
+        }
+
+        if (k < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(k), "Threshold multiplier k must be non-negative.");
         }
 
         preTriggerSamples = Math.Clamp(preTriggerSamples, 1, samples.Count - 1);
