@@ -44,3 +44,12 @@
 /Seismic.UI/obj/project.nuget.cache
 /Seismic.UI/obj/Seismic.UI.csproj.nuget.dgspec.json
 /Seismic.UI/obj/Seismic.UI.csproj.nuget.g.props
+/Seismic.UI/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+/Seismic.UI/obj/Debug/net8.0/rpswa.dswa.cache.json
+/Seismic.UI/obj/Debug/net8.0/Seismic.UI.AssemblyInfo.cs
+/Seismic.UI/obj/Debug/net8.0/Seismic.UI.AssemblyInfoInputs.cache
+/Seismic.UI/obj/Debug/net8.0/Seismic.UI.assets.cache
+/Seismic.UI/obj/Debug/net8.0/Seismic.UI.GeneratedMSBuildEditorConfig.editorconfig
+/Seismic.UI/obj/Debug/net8.0/Seismic.UI.GlobalUsings.g.cs
+/Seismic.UI/obj/Debug/net8.0/staticwebassets.removed.txt
+/Seismic.UI/obj/Seismic.UI.csproj.nuget.g.targets
