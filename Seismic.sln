@@ -2,7 +2,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seismic.UI", "C:\\Users\\tommy\\source\\repos\\tcrabtree\\Seismic\\src\\Seismic.UI\\Seismic.UI.csproj", "{D4B2445E-8CB8-4D6F-9535-744327A6DB9A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Seismic.UI", "Seismic.UI\Seismic.UI.csproj", "{D4B2445E-8CB8-4D6F-9535-744327A6DB9A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
