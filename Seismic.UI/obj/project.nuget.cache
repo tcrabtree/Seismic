@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "dgSpecHash": "mVrrQX5QPEo=",
+  "success": false,
+  "projectFilePath": "C:\\Users\\tommy\\source\\repos\\tcrabtree\\Seismic\\Seismic.UI\\Seismic.UI.csproj",
+  "expectedPackageFiles": [],
+  "logs": [
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Unable to resolve 'Microsoft.WindowsDesktop.App.Ref (= 8.0.22)' for 'net8.0'. PackageSourceMapping is enabled, the following source(s) were not considered: DevExpress 25.1 Local, Microsoft Visual Studio Offline Packages, nuget.abp.io.",
+      "projectPath": "C:\\Users\\tommy\\source\\repos\\tcrabtree\\Seismic\\Seismic.UI\\Seismic.UI.csproj",
+      "filePath": "C:\\Users\\tommy\\source\\repos\\tcrabtree\\Seismic\\Seismic.UI\\Seismic.UI.csproj",
+      "libraryId": "Microsoft.WindowsDesktop.App.Ref",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Unable to resolve 'Microsoft.NETCore.App.Ref (= 8.0.22)' for 'net8.0'. PackageSourceMapping is enabled, the following source(s) were not considered: DevExpress 25.1 Local, Microsoft Visual Studio Offline Packages, nuget.abp.io.",
+      "projectPath": "C:\\Users\\tommy\\source\\repos\\tcrabtree\\Seismic\\Seismic.UI\\Seismic.UI.csproj",
+      "filePath": "C:\\Users\\tommy\\source\\repos\\tcrabtree\\Seismic\\Seismic.UI\\Seismic.UI.csproj",
+      "libraryId": "Microsoft.NETCore.App.Ref",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Unable to resolve 'Microsoft.AspNetCore.App.Ref (= 8.0.22)' for 'net8.0'. PackageSourceMapping is enabled, the following source(s) were not considered: DevExpress 25.1 Local, Microsoft Visual Studio Offline Packages, nuget.abp.io.",
+      "projectPath": "C:\\Users\\tommy\\source\\repos\\tcrabtree\\Seismic\\Seismic.UI\\Seismic.UI.csproj",
+      "filePath": "C:\\Users\\tommy\\source\\repos\\tcrabtree\\Seismic\\Seismic.UI\\Seismic.UI.csproj",
+      "libraryId": "Microsoft.AspNetCore.App.Ref",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    },
+    {
+      "code": "NU1100",
+      "level": "Error",
+      "message": "Unable to resolve 'Microsoft.NETCore.App.Host.win-x64 (= 8.0.22)' for 'net8.0'. PackageSourceMapping is enabled, the following source(s) were not considered: DevExpress 25.1 Local, Microsoft Visual Studio Offline Packages, nuget.abp.io.",
+      "projectPath": "C:\\Users\\tommy\\source\\repos\\tcrabtree\\Seismic\\Seismic.UI\\Seismic.UI.csproj",
+      "filePath": "C:\\Users\\tommy\\source\\repos\\tcrabtree\\Seismic\\Seismic.UI\\Seismic.UI.csproj",
+      "libraryId": "Microsoft.NETCore.App.Host.win-x64",
+      "targetGraphs": [
+        "net8.0"
+      ]
+    }
+  ]
+}
