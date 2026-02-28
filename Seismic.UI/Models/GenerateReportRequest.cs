@@ -4,7 +4,7 @@ namespace Seismic.UI.Models;
 
 public sealed class GenerateReportRequest
 {
-    [Required]
+    [Range(1, int.MaxValue)]
     public int SiteId { get; init; }
 
     [Required]

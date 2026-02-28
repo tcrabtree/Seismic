@@ -28,6 +28,11 @@ public class ApiController(ISeismicDataService dataService) : ControllerBase
     [HttpPost("events/{id:int}/override")]
     public IActionResult SaveOverride(int id, [FromBody] SaveOverrideRequest payload)
     {
+        if (dataService.GetSeismographEventReport(id) is null)
+        {
+            return NotFound(new { message = "Event not found." });
+        }
+
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
@@ -56,6 +61,11 @@ public class ApiController(ISeismicDataService dataService) : ControllerBase
         if (!ModelState.IsValid)
         {
             return ValidationProblem(ModelState);
+        }
+
+        if (!dataService.GetSites().Any(s => s.Id == payload.SiteId))
+        {
+            return NotFound(new { message = "Site not found." });
         }
 
         if (payload.EndDate < payload.StartDate)
