@@ -15,7 +15,7 @@ public class ApiController(MockSeismicDataService dataService) : ControllerBase
         => Ok(dataService.GetSiteEvents(id, confidence, flaggedOnly));
 
     [HttpGet("events/{id:int}")]
-    public IActionResult GetEvent(int id) => Ok(dataService.GetEventDetail(id));
+    public IActionResult GetEvent(int id) => Ok(dataService.GetSeismographEventReport(id));
 
     [HttpPost("events/{id:int}/override")]
     public IActionResult SaveOverride(int id, [FromBody] object payload)

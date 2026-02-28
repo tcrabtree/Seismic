@@ -9,6 +9,6 @@ public class EventsController(MockSeismicDataService dataService) : Controller
     [HttpGet("{id:int}")]
     public IActionResult Details(int id)
     {
-        return View("EventDetail", dataService.GetEventDetail(id));
+        return View("EventDetail", dataService.GetSeismographEventReport(id));
     }
 }

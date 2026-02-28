@@ -58,11 +58,11 @@
 
 @section Scripts {
 <script>
-const eventId = @Model.EventId;
-const seismic = @Html.Raw(JsonSerializer.Serialize(Model.SeismicWaveform));
-const acoustic = @Html.Raw(JsonSerializer.Serialize(Model.AcousticWaveform));
-const seismicOnset = @Model.SeismicOnsetIndex;
-const acousticOnset = @Model.AcousticOnsetIndex;
+const eventId = @(Model.EventId);
+const seismic = @(Html.Raw(JsonSerializer.Serialize(Model.SeismicWaveform)));
+const acoustic = @(Html.Raw(JsonSerializer.Serialize(Model.AcousticWaveform)));
+const seismicOnset = @(Model.SeismicOnsetIndex);
+const acousticOnset = @(Model.AcousticOnsetIndex);
 
 const labels = Array.from({ length: seismic.length }, (_, i) => i);
 const onsetDataset = {

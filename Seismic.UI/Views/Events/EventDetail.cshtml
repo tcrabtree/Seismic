@@ -119,13 +119,13 @@
 
 @section Scripts {
 <script>
-const timeValues = @Html.Raw(JsonSerializer.Serialize(Model.WaveformData.TimeSeconds));
-const radial = @Html.Raw(JsonSerializer.Serialize(Model.WaveformData.RadialSeries));
-const transverse = @Html.Raw(JsonSerializer.Serialize(Model.WaveformData.TransverseSeries));
-const vertical = @Html.Raw(JsonSerializer.Serialize(Model.WaveformData.VerticalSeries));
-const air = @Html.Raw(JsonSerializer.Serialize(Model.WaveformData.AirSeries));
-const seismicOnset = @Model.WaveformData.SeismicOnsetTime;
-const airOnset = @Model.WaveformData.AirOnsetTime;
+const timeValues = @(Html.Raw(JsonSerializer.Serialize(Model.WaveformData.TimeSeconds)));
+const radial = @(Html.Raw(JsonSerializer.Serialize(Model.WaveformData.RadialSeries)));
+const transverse = @(Html.Raw(JsonSerializer.Serialize(Model.WaveformData.TransverseSeries)));
+const vertical = @(Html.Raw(JsonSerializer.Serialize(Model.WaveformData.VerticalSeries)));
+const air = @(Html.Raw(JsonSerializer.Serialize(Model.WaveformData.AirSeries)));
+const seismicOnset = @(Model.WaveformData.SeismicOnsetTime);
+const airOnset = @(Model.WaveformData.AirOnsetTime);
 
 const maxAbs = (series) => Math.max(...series.map(v => Math.abs(v)), 0.001);
 
@@ -228,10 +228,10 @@ new Chart(document.getElementById('waveformChart'), {
     plugins: [waveformBandPlugin]
 });
 
-const rPoints = @Html.Raw(JsonSerializer.Serialize(Model.FrequencyPlotData.RPoints.Select(p => new { x = p.Frequency, y = p.Velocity })));
-const tPoints = @Html.Raw(JsonSerializer.Serialize(Model.FrequencyPlotData.TPoints.Select(p => new { x = p.Frequency, y = p.Velocity })));
-const vPoints = @Html.Raw(JsonSerializer.Serialize(Model.FrequencyPlotData.VPoints.Select(p => new { x = p.Frequency, y = p.Velocity })));
-const usbmCurve = @Html.Raw(JsonSerializer.Serialize(Model.FrequencyPlotData.USBMCurve.Select(p => new { x = p.Frequency, y = p.Velocity })));
+const rPoints = @(Html.Raw(JsonSerializer.Serialize(Model.FrequencyPlotData.RPoints.Select(p => new { x = p.Frequency, y = p.Velocity }))));
+const tPoints = @(Html.Raw(JsonSerializer.Serialize(Model.FrequencyPlotData.TPoints.Select(p => new { x = p.Frequency, y = p.Velocity }))));
+const vPoints = @(Html.Raw(JsonSerializer.Serialize(Model.FrequencyPlotData.VPoints.Select(p => new { x = p.Frequency, y = p.Velocity }))));
+const usbmCurve = @(Html.Raw(JsonSerializer.Serialize(Model.FrequencyPlotData.USBMCurve.Select(p => new { x = p.Frequency, y = p.Velocity }))));
 
 new Chart(document.getElementById('usbmChart'), {
     type: 'scatter',
