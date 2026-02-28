@@ -1,0 +1,57 @@
+@using System.Text.Json
+@model MonitorHealthViewModel
+@{
+    ViewData["Title"] = "Instrument Health";
+}
+
+<h2 class="mb-4 border-bottom pb-2">@Model.MonitorName - Instrument Health</h2>
+<div class="mb-3"><strong>Current Health Score:</strong> <partial name="_HealthBadge" model="Model.HealthScore" /></div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold bg-light">Health Trend</div>
+    <div class="card-body">
+        <canvas id="healthTrendChart" height="120"></canvas>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold bg-light">Regression Stability</div>
+    <div class="card-body">
+        <ul class="list-unstyled mb-0">
+            <li><strong>R² value:</strong> @Model.R2Value</li>
+            <li><strong>Axis slope ratios:</strong> @Model.AxisSlopeRatios</li>
+            <li><strong>Energy symmetry ratio:</strong> @Model.EnergySymmetryRatio</li>
+        </ul>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold bg-light">Anomaly Flags</div>
+    <div class="card-body p-0">
+        <table class="table table-striped table-hover align-middle mb-0">
+            <thead><tr><th>Date</th><th>Severity</th><th>Description</th></tr></thead>
+            <tbody>
+            @foreach (var anomaly in Model.Anomalies)
+            {
+                <tr>
+                    <td>@anomaly.DateUtc.ToString("yyyy-MM-dd")</td>
+                    <td><partial name="_StatusBadge" model="anomaly.Severity" /></td>
+                    <td>@anomaly.Message</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const labels = @Html.Raw(JsonSerializer.Serialize(Model.TrendLabels));
+const values = @Html.Raw(JsonSerializer.Serialize(Model.TrendScores));
+new Chart(document.getElementById('healthTrendChart'), {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Health Score', data: values, borderColor: '#198754', pointRadius: 0, tension: 0.2 }] },
+    options: { scales: { y: { min: 0, max: 100 } } }
+});
+</script>
+}
