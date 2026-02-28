@@ -127,11 +127,36 @@ const air = @Html.Raw(JsonSerializer.Serialize(Model.WaveformData.AirSeries));
 const seismicOnset = @Model.WaveformData.SeismicOnsetTime;
 const airOnset = @Model.WaveformData.AirOnsetTime;
 
-const waveformPlugin = {
-    id: 'onsetLines',
-    afterDatasetsDraw(chart) {
-        const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
-        const drawLine = (value, color) => {
+const maxAbs = (series) => Math.max(...series.map(v => Math.abs(v)), 0.001);
+
+const channelBands = {
+    R: maxAbs(radial) * 1.5,
+    T: maxAbs(transverse) * 1.5,
+    V: maxAbs(vertical) * 1.5,
+    A: maxAbs(air) * 1.5
+};
+
+const channelOffsets = {
+    A: channelBands.A,
+    V: channelBands.A + channelBands.A + channelBands.V,
+    T: channelBands.A + channelBands.A + channelBands.V + channelBands.V + channelBands.T,
+    R: channelBands.A + channelBands.A + channelBands.V + channelBands.V + channelBands.T + channelBands.T + channelBands.R
+};
+
+const bandDividers = [
+    (channelOffsets.R + channelOffsets.T) / 2,
+    (channelOffsets.T + channelOffsets.V) / 2,
+    (channelOffsets.V + channelOffsets.A) / 2
+];
+
+const waveformTop = channelOffsets.R + channelBands.R;
+
+const waveformBandPlugin = {
+    id: 'waveformBandPlugin',
+    afterDraw(chart) {
+        const { ctx, chartArea: { top, bottom, left, right }, scales: { x, y } } = chart;
+
+        const drawVerticalLine = (value, color) => {
             const xPos = x.getPixelForValue(value);
             ctx.save();
             ctx.beginPath();
@@ -144,33 +169,63 @@ const waveformPlugin = {
             ctx.restore();
         };
 
-        drawLine(seismicOnset, '#003f8a');
-        drawLine(airOnset, '#8a0000');
+        const drawDividerLine = (value) => {
+            const yPos = y.getPixelForValue(value);
+            ctx.save();
+            ctx.beginPath();
+            ctx.lineWidth = 0.7;
+            ctx.strokeStyle = '#9ca3af';
+            ctx.moveTo(left, yPos);
+            ctx.lineTo(right, yPos);
+            ctx.stroke();
+            ctx.restore();
+        };
+
+        const drawBandLabel = (label, value) => {
+            const yPos = y.getPixelForValue(value);
+            ctx.save();
+            ctx.fillStyle = '#111827';
+            ctx.font = '600 11px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, left + 4, yPos);
+            ctx.restore();
+        };
+
+        drawVerticalLine(seismicOnset, '#003f8a');
+        drawVerticalLine(airOnset, '#8a0000');
+
+        bandDividers.forEach(drawDividerLine);
+
+        drawBandLabel('R', channelOffsets.R);
+        drawBandLabel('T', channelOffsets.T);
+        drawBandLabel('V', channelOffsets.V);
+        drawBandLabel('A', channelOffsets.A);
     }
 };
 
-const waveformPoints = (series) => timeValues.map((t, i) => ({ x: t, y: series[i] }));
+const waveformPoints = (series, offset) => timeValues.map((t, i) => ({ x: t, y: series[i] + offset }));
 
 new Chart(document.getElementById('waveformChart'), {
     type: 'line',
     data: {
         datasets: [
-            { label: 'Radial', data: waveformPoints(radial), borderColor: '#0d6efd', borderWidth: 1, pointRadius: 0 },
-            { label: 'Transverse', data: waveformPoints(transverse), borderColor: '#dc3545', borderWidth: 1, pointRadius: 0 },
-            { label: 'Vertical', data: waveformPoints(vertical), borderColor: '#198754', borderWidth: 1, pointRadius: 0 },
-            { label: 'Air', data: waveformPoints(air), borderColor: '#000000', borderWidth: 1, pointRadius: 0 }
+            { label: 'Radial', data: waveformPoints(radial, channelOffsets.R), borderColor: '#0d6efd', borderWidth: 1.3, pointRadius: 0, tension: 0, fill: false },
+            { label: 'Transverse', data: waveformPoints(transverse, channelOffsets.T), borderColor: '#dc3545', borderWidth: 1.3, pointRadius: 0, tension: 0, fill: false },
+            { label: 'Vertical', data: waveformPoints(vertical, channelOffsets.V), borderColor: '#198754', borderWidth: 1.3, pointRadius: 0, tension: 0, fill: false },
+            { label: 'Air', data: waveformPoints(air, channelOffsets.A), borderColor: '#000000', borderWidth: 1.3, pointRadius: 0, tension: 0, fill: false }
         ]
     },
     options: {
         parsing: false,
         maintainAspectRatio: false,
-        plugins: { legend: { labels: { boxWidth: 10, font: { size: 10 } } } },
+        plugins: { legend: { display: false } },
         scales: {
             x: { type: 'linear', title: { display: true, text: 'Time (seconds)' }, grid: { lineWidth: 0.4 } },
-            y: { title: { display: true, text: 'Amplitude' }, grid: { lineWidth: 0.4 } }
+            y: { display: false, suggestedMin: 0, suggestedMax: waveformTop, grid: { lineWidth: 0.25, color: '#e5e7eb' } }
         }
     },
-    plugins: [waveformPlugin]
+    plugins: [waveformBandPlugin]
 });
 
 const rPoints = @Html.Raw(JsonSerializer.Serialize(Model.FrequencyPlotData.RPoints.Select(p => new { x = p.Frequency, y = p.Velocity })));
