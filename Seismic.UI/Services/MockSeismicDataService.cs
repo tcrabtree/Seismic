@@ -1,4 +1,7 @@
+using Seismic.UI.Models;
 using Seismic.UI.ViewModels;
+using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Seismic.UI.Services;
 
@@ -11,6 +14,9 @@ public sealed class MockSeismicDataService : ISeismicDataService
         new() { Id = 3, Name = "West Bench", EventCount = 18, FlaggedCount = 7, OverallHealth = "Risk" }
     ];
 
+    private readonly ConcurrentDictionary<int, List<EventListItemViewModel>> _uploadedEventsBySite = new();
+    private int _eventIdSeed = 6000;
+
     public IReadOnlyList<SiteSummaryViewModel> GetSites() => _sites;
 
     public SiteEventsPageViewModel? GetSiteEvents(int siteId, string confidence = "All", bool flaggedOnly = false)
@@ -21,7 +27,7 @@ public sealed class MockSeismicDataService : ISeismicDataService
             return null;
         }
 
-        var events = Enumerable.Range(1, 16).Select(i =>
+        var defaultEvents = Enumerable.Range(1, 16).Select(i =>
         {
             var score = 52 + (i * 3 % 45);
             var confidenceLevel = score >= 80 ? "High" : score >= 60 ? "Medium" : "Low";
@@ -37,7 +43,15 @@ public sealed class MockSeismicDataService : ISeismicDataService
                 DistanceDeviationFlag = i % 5 == 0,
                 HealthWarningFlag = i % 7 == 0
             };
-        }).ToList();
+        });
+
+        var uploadedEvents = _uploadedEventsBySite.TryGetValue(siteId, out var stored)
+            ? stored.ToList()
+            : [];
+
+        var events = defaultEvents.Concat(uploadedEvents)
+            .OrderByDescending(e => e.TimestampUtc)
+            .ToList();
 
         if (!string.Equals(confidence, "All", StringComparison.OrdinalIgnoreCase))
         {
@@ -61,6 +75,53 @@ public sealed class MockSeismicDataService : ISeismicDataService
             DistanceDeviationCount = events.Count(e => e.DistanceDeviationFlag),
             Events = events
         };
+    }
+
+    public int AddUploadedEvent(int siteId, string sourceFileName, CsvEventMetadata metadata, string? monitorId, DateTime? eventDate)
+    {
+        var siteExists = _sites.Any(s => s.Id == siteId);
+        if (!siteExists)
+        {
+            return -1;
+        }
+
+        var eventId = Interlocked.Increment(ref _eventIdSeed);
+        var totalMax = Math.Max(metadata.MaxAbsR, Math.Max(metadata.MaxAbsT, Math.Max(metadata.MaxAbsV, metadata.MaxAbsA)));
+        var validity = Math.Min(100, 55 + totalMax * 180);
+
+        var eventItem = new EventListItemViewModel
+        {
+            Id = eventId,
+            TimestampUtc = eventDate ?? DateTime.UtcNow,
+            MonitorId = string.IsNullOrWhiteSpace(monitorId) ? $"M-{siteId:D2}-UP" : monitorId,
+            DeltaTMilliseconds = Math.Max(0, (metadata.OnsetTimeSeconds * 1000.0) / 8.0),
+            EstimatedDistanceMeters = Math.Max(1, metadata.OnsetTimeSeconds * 343.0),
+            ValidityScore = Math.Round(validity, 1),
+            Confidence = validity >= 80 ? "High" : validity >= 60 ? "Medium" : "Low",
+            DistanceDeviationFlag = metadata.DurationSeconds < 1.0 || metadata.DurationSeconds > 20.0,
+            HealthWarningFlag = metadata.MaxAbsA > 0.25
+        };
+
+        _uploadedEventsBySite.AddOrUpdate(
+            siteId,
+            _ => [eventItem],
+            (_, existing) =>
+            {
+                lock (existing)
+                {
+                    existing.Add(eventItem);
+                    return existing;
+                }
+            });
+
+        var site = _sites.First(s => s.Id == siteId);
+        site.EventCount += 1;
+        if (eventItem.DistanceDeviationFlag || eventItem.HealthWarningFlag)
+        {
+            site.FlaggedCount += 1;
+        }
+
+        return eventId;
     }
 
     public SeismographEventReportViewModel? GetSeismographEventReport(int eventId)
