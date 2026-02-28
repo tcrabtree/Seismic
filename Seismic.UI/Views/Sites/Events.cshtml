@@ -3,7 +3,12 @@
     ViewData["Title"] = "Events";
 }
 
-<h2 class="mb-4 border-bottom pb-2">@Model.SiteName - Event Review</h2>
+<div class="d-flex justify-content-between align-items-start mb-4 border-bottom pb-2">
+    <h2 class="mb-0">@Model.SiteName - Event Review</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadEventCsvModal">
+        Upload Event CSVs
+    </button>
+</div>
 
 <div class="row">
     <partial name="_SummaryStatCard" model='("Total Events", Model.TotalEvents.ToString())' />
@@ -83,3 +88,114 @@
         </table>
     </div>
 </div>
+
+<partial name="_UploadEventCsvModal" model="Model.SiteId" />
+
+@section Scripts {
+<script>
+(function () {
+    const fileInput = document.getElementById('uploadCsvFiles');
+    const monitorInput = document.getElementById('uploadMonitorId');
+    const eventDateInput = document.getElementById('uploadEventDate');
+    const statusList = document.getElementById('uploadStatusList');
+    const uploadBtn = document.getElementById('submitUploadCsvBtn');
+    const progressBar = document.getElementById('uploadProgressBar');
+    const alertHost = document.getElementById('uploadAlertHost');
+    const siteId = document.getElementById('uploadSiteId').value;
+
+    const setProgress = (value) => {
+        const normalized = Math.max(0, Math.min(100, value));
+        progressBar.style.width = `${normalized}%`;
+        progressBar.textContent = `${Math.round(normalized)}%`;
+    };
+
+    const showAlert = (message, type) => {
+        alertHost.innerHTML = `<div class="alert alert-${type} py-2" role="alert">${message}</div>`;
+    };
+
+    const clearAlert = () => {
+        alertHost.innerHTML = '';
+    };
+
+    const appendStatus = (fileName, success, message) => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item d-flex justify-content-between align-items-center';
+        li.innerHTML = `
+            <span class="text-truncate me-2">${fileName}</span>
+            <span>
+                <span class="badge ${success ? 'bg-success' : 'bg-danger'} me-2">${success ? 'Success' : 'Failed'}</span>
+                <small class="text-muted">${message ?? ''}</small>
+            </span>`;
+        statusList.appendChild(li);
+    };
+
+    uploadBtn.addEventListener('click', async () => {
+        clearAlert();
+        statusList.innerHTML = '';
+        setProgress(0);
+
+        const files = Array.from(fileInput.files ?? []);
+
+        if (files.length === 0) {
+            showAlert('No files selected.', 'warning');
+            return;
+        }
+
+        const invalidFiles = files.filter(file => !file.name.toLowerCase().endsWith('.csv'));
+        if (invalidFiles.length > 0) {
+            showAlert(`Only .csv files are allowed. Invalid: ${invalidFiles.map(f => f.name).join(', ')}`, 'danger');
+            return;
+        }
+
+        const formData = new FormData();
+        files.forEach(file => formData.append('files', file));
+
+        if (monitorInput.value.trim()) {
+            formData.append('monitorId', monitorInput.value.trim());
+        }
+
+        if (eventDateInput.value) {
+            formData.append('eventDate', eventDateInput.value);
+        }
+
+        uploadBtn.disabled = true;
+
+        try {
+            setProgress(30);
+            const response = await fetch(`/api/events/upload-multiple?siteId=${encodeURIComponent(siteId)}`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const results = await response.json();
+
+            if (!Array.isArray(results)) {
+                showAlert('Unexpected upload response.', 'danger');
+                return;
+            }
+
+            let successCount = 0;
+            results.forEach(result => {
+                if (result.success) {
+                    successCount++;
+                }
+                appendStatus(result.fileName || '(unknown)', result.success, result.error || (result.eventId ? `Event ID: ${result.eventId}` : ''));
+            });
+
+            setProgress(100);
+
+            if (successCount > 0) {
+                showAlert(`Uploaded ${successCount} of ${results.length} file(s). Refreshing event list...`, 'success');
+                setTimeout(() => window.location.reload(), 1000);
+            } else {
+                showAlert('No files were uploaded successfully.', 'danger');
+            }
+        } catch {
+            showAlert('Upload request failed. Try again.', 'danger');
+        } finally {
+            uploadBtn.disabled = false;
+        }
+    });
+})();
+</script>
+}

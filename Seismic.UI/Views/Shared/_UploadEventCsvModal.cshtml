@@ -1,0 +1,44 @@
+@model int
+
+<div class="modal fade" id="uploadEventCsvModal" tabindex="-1" aria-labelledby="uploadEventCsvModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadEventCsvModalLabel">Upload Seismograph Event CSV Files</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="uploadCsvFiles" class="form-label">CSV Files</label>
+                    <input type="file" class="form-control" id="uploadCsvFiles" multiple accept=".csv" />
+                    <div class="form-text">Each CSV must include: Time,R,T,V,A columns</div>
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label for="uploadMonitorId" class="form-label">Monitor ID (optional)</label>
+                        <input type="text" class="form-control" id="uploadMonitorId" maxlength="50" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="uploadEventDate" class="form-label">Event Date (optional override)</label>
+                        <input type="date" class="form-control" id="uploadEventDate" />
+                    </div>
+                </div>
+
+                <div id="uploadAlertHost"></div>
+
+                <div class="mb-2">
+                    <div class="progress" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100">
+                        <div id="uploadProgressBar" class="progress-bar" style="width: 0%">0%</div>
+                    </div>
+                </div>
+
+                <ul id="uploadStatusList" class="list-group small"></ul>
+                <input type="hidden" id="uploadSiteId" value="@Model" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="submitUploadCsvBtn">Upload Files</button>
+            </div>
+        </div>
+    </div>
+</div>
