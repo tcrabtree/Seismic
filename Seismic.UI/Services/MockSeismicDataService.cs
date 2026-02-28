@@ -4,12 +4,12 @@ namespace Seismic.UI.Services;
 
 public sealed class MockSeismicDataService
 {
-    private readonly List<SiteSummaryViewModel> _sites =
-    [
+    private readonly List<SiteSummaryViewModel> _sites = new()
+    {
         new() { Id = 1, Name = "North Quarry", EventCount = 42, FlaggedCount = 5, OverallHealth = "Healthy" },
         new() { Id = 2, Name = "East Pit", EventCount = 30, FlaggedCount = 8, OverallHealth = "Warning" },
         new() { Id = 3, Name = "West Bench", EventCount = 18, FlaggedCount = 7, OverallHealth = "Risk" }
-    ];
+    };
 
     public IReadOnlyList<SiteSummaryViewModel> GetSites() => _sites;
 
