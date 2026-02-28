@@ -3,7 +3,7 @@ using Seismic.UI.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
-builder.Services.AddSingleton<MockSeismicDataService>();
+builder.Services.AddSingleton<ISeismicDataService, MockSeismicDataService>();
 
 var app = builder.Build();
 

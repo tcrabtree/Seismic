@@ -5,7 +5,7 @@ using Seismic.UI.ViewModels;
 namespace Seismic.UI.Controllers;
 
 [Route("Reports")]
-public class ReportsController(MockSeismicDataService dataService) : Controller
+public class ReportsController(ISeismicDataService dataService) : Controller
 {
     [HttpGet("")]
     public IActionResult Index()

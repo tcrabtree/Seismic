@@ -4,11 +4,17 @@ using Seismic.UI.Services;
 namespace Seismic.UI.Controllers;
 
 [Route("Monitors")]
-public class MonitorsController(MockSeismicDataService dataService) : Controller
+public class MonitorsController(ISeismicDataService dataService) : Controller
 {
     [HttpGet("{id:int}/Health")]
     public IActionResult Health(int id)
     {
-        return View(dataService.GetMonitorHealth(id));
+        var model = dataService.GetMonitorHealth(id);
+        if (model is null)
+        {
+            return NotFound();
+        }
+
+        return View(model);
     }
 }

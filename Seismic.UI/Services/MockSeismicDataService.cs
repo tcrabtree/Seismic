@@ -2,7 +2,7 @@ using Seismic.UI.ViewModels;
 
 namespace Seismic.UI.Services;
 
-public sealed class MockSeismicDataService
+public sealed class MockSeismicDataService : ISeismicDataService
 {
     private readonly List<SiteSummaryViewModel> _sites =
     [
@@ -13,9 +13,13 @@ public sealed class MockSeismicDataService
 
     public IReadOnlyList<SiteSummaryViewModel> GetSites() => _sites;
 
-    public SiteEventsPageViewModel GetSiteEvents(int siteId, string confidence = "All", bool flaggedOnly = false)
+    public SiteEventsPageViewModel? GetSiteEvents(int siteId, string confidence = "All", bool flaggedOnly = false)
     {
-        var site = _sites.FirstOrDefault(s => s.Id == siteId) ?? _sites[0];
+        var site = _sites.FirstOrDefault(s => s.Id == siteId);
+        if (site is null)
+        {
+            return null;
+        }
 
         var events = Enumerable.Range(1, 16).Select(i =>
         {
@@ -59,8 +63,13 @@ public sealed class MockSeismicDataService
         };
     }
 
-    public SeismographEventReportViewModel GetSeismographEventReport(int eventId)
+    public SeismographEventReportViewModel? GetSeismographEventReport(int eventId)
     {
+        if (eventId <= 0)
+        {
+            return null;
+        }
+
         const int sampleRate = 512;
         const double durationSeconds = 10.0;
         const int totalSamples = (int)(sampleRate * durationSeconds);
@@ -132,8 +141,13 @@ public sealed class MockSeismicDataService
         };
     }
 
-    public MonitorHealthViewModel GetMonitorHealth(int monitorId)
+    public MonitorHealthViewModel? GetMonitorHealth(int monitorId)
     {
+        if (monitorId <= 0)
+        {
+            return null;
+        }
+
         var labels = Enumerable.Range(0, 30).Select(i => DateTime.UtcNow.AddDays(-29 + i).ToString("MM-dd")).ToList();
         var scores = Enumerable.Range(0, 30).Select(i => 88 + Math.Sin(i / 4.0) * 8 - (i % 11 == 0 ? 12 : 0)).ToList();
 
