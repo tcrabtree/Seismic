@@ -3,4 +3,4 @@
 **/obj/
 *.user
 *.suo
-App_Data/Events/
+/src/Seismic.UI/App_Data/Events
