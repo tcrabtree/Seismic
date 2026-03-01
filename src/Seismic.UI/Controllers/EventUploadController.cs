@@ -1,12 +1,17 @@
 using Microsoft.AspNetCore.Mvc;
+using Seismic.Data.Entities;
+using Seismic.Data.Interfaces;
 using Seismic.UI.Models;
 using Seismic.UI.Services;
+using System.Globalization;
 
 namespace Seismic.UI.Controllers;
 
 [ApiController]
 [Route("api/events")]
 public sealed class EventUploadController(
+    IEventRepository eventRepository,
+    IWaveformRepository waveformRepository,
     ISeismicDataService dataService,
     EventCsvParsingService csvParsingService,
     IWebHostEnvironment webHostEnvironment) : ControllerBase
@@ -63,8 +68,8 @@ public sealed class EventUploadController(
 
             try
             {
-                var (metadata, parseError) = await csvParsingService.ParseAndExtractMetadataAsync(file, HttpContext.RequestAborted);
-                if (metadata is null)
+                var (points, metadata, parseError) = await csvParsingService.ParseWithMetadataAsync(file, HttpContext.RequestAborted);
+                if (metadata is null || points is null)
                 {
                     results.Add(new UploadMultipleResult
                     {
@@ -75,20 +80,54 @@ public sealed class EventUploadController(
                     continue;
                 }
 
-                var storedFileName = $"{Guid.NewGuid():N}.csv";
+                var eventGuid = Guid.NewGuid();
+                var storedFileName = $"{eventGuid:N}.csv";
                 var storedPath = Path.Combine(eventsPath, storedFileName);
                 await using (var fileStream = System.IO.File.Create(storedPath))
                 {
                     await file.CopyToAsync(fileStream, HttpContext.RequestAborted);
                 }
 
-                var eventId = dataService.AddUploadedEvent(siteId.Value, file.FileName, metadata, monitorId, eventDate);
+                var monitorValue = string.IsNullOrWhiteSpace(monitorId)
+                    ? $"M-{siteId.Value:D2}-UP"
+                    : monitorId.Trim();
+
+                var eventEntity = new Event
+                {
+                    EventId = eventGuid,
+                    SiteId = siteId.Value.ToString(CultureInfo.InvariantCulture),
+                    MonitorId = monitorValue,
+                    EventTimestamp = eventDate ?? DateTime.UtcNow,
+                    Distance = Math.Max(1, metadata.OnsetTimeSeconds * 343.0),
+                    WeightPerDelay = 0,
+                    ScaledDistance = 0,
+                    RawCsvPath = Path.Combine("App_Data", "Events", storedFileName),
+                    IsReviewed = false,
+                    CreatedAt = DateTime.UtcNow,
+                    ReviewedAt = null
+                };
+
+                await eventRepository.Add(eventEntity);
+
+                var waveformEntities = points.Select(p => new Seismic.Data.Entities.WaveformPoint
+                {
+                    EventId = eventGuid,
+                    Time = p.Time,
+                    R = p.R,
+                    T = p.T,
+                    V = p.V,
+                    A = p.A
+                });
+
+                await waveformRepository.AddRange(waveformEntities);
+
+                dataService.AddUploadedEvent(siteId.Value, file.FileName, metadata, monitorValue, eventDate);
 
                 results.Add(new UploadMultipleResult
                 {
                     FileName = file.FileName,
                     Success = true,
-                    EventId = eventId,
+                    EventId = eventGuid.ToString(),
                     Error = null
                 });
             }
@@ -127,7 +166,7 @@ public sealed class EventUploadController(
         }
 
         var tail = referer[(start + marker.Length)..];
-        var siteSegment = tail.Split('/', '?', '#', (char)StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        var siteSegment = tail.Split(new[] { '/', '?', '#' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
 
         return int.TryParse(siteSegment, out var parsedSiteId) && parsedSiteId > 0
             ? parsedSiteId

@@ -11,6 +11,14 @@ public sealed class EventCsvParsingService
 
     public async Task<(CsvEventMetadata? Metadata, string? Error)> ParseAndExtractMetadataAsync(IFormFile file, CancellationToken cancellationToken = default)
     {
+        var (points, metadata, error) = await ParseWithMetadataAsync(file, cancellationToken);
+        return (metadata, error);
+    }
+
+    public async Task<(IReadOnlyList<WaveformPoint>? Points, CsvEventMetadata? Metadata, string? Error)> ParseWithMetadataAsync(
+        IFormFile file,
+        CancellationToken cancellationToken = default)
+    {
         var config = new CsvConfiguration(CultureInfo.InvariantCulture)
         {
             PrepareHeaderForMatch = args => args.Header?.Trim() ?? string.Empty,
@@ -24,7 +32,7 @@ public sealed class EventCsvParsingService
 
         if (!await csv.ReadAsync() || !csv.ReadHeader())
         {
-            return (null, "CSV is empty or missing a header row.");
+            return (null, null, "CSV is empty or missing a header row.");
         }
 
         var headers = csv.HeaderRecord?.Select(h => h.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase)
@@ -33,7 +41,7 @@ public sealed class EventCsvParsingService
         var missing = RequiredColumns.Where(col => !headers.Contains(col)).ToArray();
         if (missing.Length > 0)
         {
-            return (null, $"Missing required columns: {string.Join(",", missing)}");
+            return (null, null, $"Missing required columns: {string.Join(",", missing)}");
         }
 
         var points = new List<WaveformPoint>();
@@ -56,7 +64,7 @@ public sealed class EventCsvParsingService
 
         if (points.Count == 0)
         {
-            return (null, "CSV contains no waveform samples.");
+            return (null, null, "CSV contains no waveform samples.");
         }
 
         var maxAbsR = points.Max(p => Math.Abs(p.R));
@@ -70,7 +78,7 @@ public sealed class EventCsvParsingService
 
         var onset = ComputeOnsetTime(points, maxAbsR, maxAbsT, maxAbsV, maxAbsA, minTime);
 
-        return (new CsvEventMetadata
+        return (points, new CsvEventMetadata
         {
             MaxAbsR = maxAbsR,
             MaxAbsT = maxAbsT,
