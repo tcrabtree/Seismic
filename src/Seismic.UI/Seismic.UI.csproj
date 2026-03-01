@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Seismic.Data\Seismic.Data.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\js\" />
     <Folder Include="wwwroot\css\" />
   </ItemGroup>
