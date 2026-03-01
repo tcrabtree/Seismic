@@ -1,0 +1,71 @@
+@model ReportsPageViewModel
+@{
+    ViewData["Title"] = "Reports";
+}
+
+<h2 class="mb-4 border-bottom pb-2">Reports</h2>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-header fw-semibold bg-light">Report Generator</div>
+    <div class="card-body">
+        <form id="reportForm" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Site</label>
+                <select class="form-select" id="siteId">
+                    @foreach (var site in Model.Sites)
+                    {
+                        <option value="@site.Id">@site.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">From</label>
+                <input type="date" class="form-control" id="fromDate" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">To</label>
+                <input type="date" class="form-control" id="toDate" />
+            </div>
+            <div class="col-12">
+                <div class="form-check"><input class="form-check-input" type="checkbox" id="includeEventSummary" checked><label class="form-check-label" for="includeEventSummary">Event Summary</label></div>
+                <div class="form-check"><input class="form-check-input" type="checkbox" id="includeDistanceAnalysis" checked><label class="form-check-label" for="includeDistanceAnalysis">Distance Analysis</label></div>
+                <div class="form-check"><input class="form-check-input" type="checkbox" id="includeInstrumentHealth" checked><label class="form-check-label" for="includeInstrumentHealth">Instrument Health</label></div>
+            </div>
+            <div class="col-12 d-flex gap-2">
+                <button class="btn btn-primary" type="submit">Generate PDF</button>
+                <button class="btn btn-outline-secondary" type="button" id="exportCsv">Export CSV</button>
+            </div>
+        </form>
+        <div id="reportResult" class="small text-success mt-3"></div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.getElementById('reportForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+        siteId: Number(document.getElementById('siteId').value),
+        fromDate: document.getElementById('fromDate').value,
+        toDate: document.getElementById('toDate').value,
+        includeEventSummary: document.getElementById('includeEventSummary').checked,
+        includeDistanceAnalysis: document.getElementById('includeDistanceAnalysis').checked,
+        includeInstrumentHealth: document.getElementById('includeInstrumentHealth').checked
+    };
+
+    const response = await fetch('/api/reports/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    });
+
+    if (response.ok) {
+        document.getElementById('reportResult').innerText = 'Report request generated (mock).';
+    }
+});
+
+document.getElementById('exportCsv').addEventListener('click', () => {
+    document.getElementById('reportResult').innerText = 'CSV export requested (mock).';
+});
+</script>
+}
