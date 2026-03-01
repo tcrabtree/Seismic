@@ -1,0 +1,5 @@
+@model double
+@{
+    var status = Model >= 80 ? "Healthy" : Model >= 60 ? "Warning" : "Risk";
+}
+<span class="badge @(status == "Healthy" ? "bg-success" : status == "Warning" ? "bg-warning text-dark" : "bg-danger") fs-6">@Model.ToString("0.0") (@status)</span>
