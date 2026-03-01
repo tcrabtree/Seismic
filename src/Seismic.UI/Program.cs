@@ -12,7 +12,9 @@ builder.Services.AddSingleton<ISeismicDataService, MockSeismicDataService>();
 builder.Services.AddScoped<EventCsvParsingService>();
 
 builder.Services.AddDbContext<SeismicDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.MigrationsAssembly("Seismic.Data")));
 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 builder.Services.AddScoped<IWaveformRepository, WaveformRepository>();
