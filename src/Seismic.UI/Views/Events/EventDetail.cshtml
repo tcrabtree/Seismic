@@ -1,0 +1,257 @@
+@using System.Text.Json
+@model SeismographEventReportViewModel
+@{
+    ViewData["Title"] = "Event Detail";
+}
+
+<div class="container border mt-4 mb-5 p-4 bg-white report-sheet">
+    <div class="text-center fw-bold fs-5 text-primary-emphasis mb-2">@Model.Header.MonitoringCompany</div>
+
+    <table class="table table-bordered table-sm mb-3 report-table">
+        <tbody>
+            <tr>
+                <th class="w-25">Company</th><td class="w-25">@Model.Header.ClientCompany</td>
+                <th class="w-25">Event Date</th><td class="w-25 text-end">@Model.Header.EventTimestamp.ToString("yyyy-MM-dd")</td>
+            </tr>
+            <tr>
+                <th>Location</th><td>@Model.Header.SiteName</td>
+                <th>Event Time</th><td class="text-end text-danger-emphasis fw-bold">@Model.Header.EventTimestamp.ToString("HH:mm:ss")</td>
+            </tr>
+            <tr>
+                <th>Unit #</th><td>@Model.Header.MonitorId</td>
+                <th>Record Duration</th><td class="text-end">@Model.Header.RecordDuration.TotalSeconds.ToString("0.0") s</td>
+            </tr>
+            <tr>
+                <th>Operator</th><td>@Model.Header.OperatorName</td>
+                <th>Sample Rate</th><td class="text-end">@Model.Header.SampleRate Hz</td>
+            </tr>
+            <tr>
+                <th>Event ID</th><td>@Model.Header.EventId</td>
+                <th>Last Calibration</th><td class="text-end">@Model.Header.LastCalibration.ToString("yyyy-MM-dd")</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <table class="table table-bordered table-sm mb-3 report-table">
+        <thead class="table-secondary">
+            <tr>
+                <th class="text-center">Distance (ft)</th>
+                <th class="text-center">Weight Per Delay (lb)</th>
+                <th class="text-center">Scaled Distance</th>
+                <th class="text-center">Trigger Level (in/s)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="text-end">@Model.BlastSummary.Distance.ToString("0.0")</td>
+                <td class="text-end">@Model.BlastSummary.WeightPerDelay.ToString("0.0")</td>
+                <td class="text-end">@Model.BlastSummary.ScaledDistance.ToString("0.00")</td>
+                <td class="text-end">@Model.BlastSummary.TriggerLevel.ToString("0.000")</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h6 class="text-center fw-bold text-primary-emphasis mb-2">Seismograph Record Summary</h6>
+    <table class="table table-bordered table-sm mb-3 report-table">
+        <thead class="table-secondary">
+            <tr>
+                <th>Measurement</th>
+                <th class="text-center">Radial</th>
+                <th class="text-center">Transverse</th>
+                <th class="text-center">Vertical</th>
+                <th class="text-center">Air</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <th>Velocity (in/s)</th>
+                <td class="text-end text-danger fw-semibold">@Model.Measurements.RadialVelocity.ToString("0.000")</td>
+                <td class="text-end">@Model.Measurements.TransverseVelocity.ToString("0.000")</td>
+                <td class="text-end text-danger fw-semibold">@Model.Measurements.VerticalVelocity.ToString("0.000")</td>
+                <td class="text-end">@Model.Measurements.AirPsi.ToString("0.000") psi</td>
+            </tr>
+            <tr>
+                <th>Frequency (Hz)</th>
+                <td class="text-end">@Model.Measurements.RadialFrequency.ToString("0.0")</td>
+                <td class="text-end text-danger fw-semibold">@Model.Measurements.TransverseFrequency.ToString("0.0")</td>
+                <td class="text-end">@Model.Measurements.VerticalFrequency.ToString("0.0")</td>
+                <td class="text-end">@Model.Measurements.AirFrequency.ToString("0.0") Hz</td>
+            </tr>
+            <tr>
+                <th>Displacement (in)</th>
+                <td class="text-end">@Model.Measurements.RadialDisplacement.ToString("0.0000")</td>
+                <td class="text-end">@Model.Measurements.TransverseDisplacement.ToString("0.0000")</td>
+                <td class="text-end text-danger fw-semibold">@Model.Measurements.VerticalDisplacement.ToString("0.0000")</td>
+                <td class="text-end">@Model.Measurements.AirDbL.ToString("0.0") dBL</td>
+            </tr>
+            <tr>
+                <th>Acceleration (g)</th>
+                <td class="text-end">@Model.Measurements.RadialAcceleration.ToString("0.0000")</td>
+                <td class="text-end">@Model.Measurements.TransverseAcceleration.ToString("0.0000")</td>
+                <td class="text-end text-danger fw-semibold">@Model.Measurements.VerticalAcceleration.ToString("0.0000")</td>
+                <td class="text-end">-</td>
+            </tr>
+            <tr>
+                <th>Trigger → Peak</th>
+                <td class="text-end">@Model.Measurements.TriggerToPeakSeconds.ToString("0.000") s</td>
+                <td class="text-end">@Model.Measurements.TriggerToPeakSeconds.ToString("0.000") s</td>
+                <td class="text-end">@Model.Measurements.TriggerToPeakSeconds.ToString("0.000") s</td>
+                <td class="text-end">@Model.Measurements.TriggerToPeakSeconds.ToString("0.000") s</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="row g-3">
+        <div class="col-lg-7">
+            <h6 class="text-center fw-bold text-primary-emphasis mb-2">Waveform Analysis</h6>
+            <div class="border p-2">
+                <canvas id="waveformChart" height="280"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <h6 class="text-center fw-bold text-primary-emphasis mb-2">Frequency Plot / USBM Limits</h6>
+            <div class="border p-2">
+                <canvas id="usbmChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const timeValues = @(Html.Raw(JsonSerializer.Serialize(Model.WaveformData.TimeSeconds)));
+const radial = @(Html.Raw(JsonSerializer.Serialize(Model.WaveformData.RadialSeries)));
+const transverse = @(Html.Raw(JsonSerializer.Serialize(Model.WaveformData.TransverseSeries)));
+const vertical = @(Html.Raw(JsonSerializer.Serialize(Model.WaveformData.VerticalSeries)));
+const air = @(Html.Raw(JsonSerializer.Serialize(Model.WaveformData.AirSeries)));
+const seismicOnset = @(Model.WaveformData.SeismicOnsetTime);
+const airOnset = @(Model.WaveformData.AirOnsetTime);
+
+const maxAbs = (series) => Math.max(...series.map(v => Math.abs(v)), 0.001);
+
+const channelBands = {
+    R: maxAbs(radial) * 1.5,
+    T: maxAbs(transverse) * 1.5,
+    V: maxAbs(vertical) * 1.5,
+    A: maxAbs(air) * 1.5
+};
+
+const channelOffsets = {
+    A: channelBands.A,
+    V: channelBands.A + channelBands.A + channelBands.V,
+    T: channelBands.A + channelBands.A + channelBands.V + channelBands.V + channelBands.T,
+    R: channelBands.A + channelBands.A + channelBands.V + channelBands.V + channelBands.T + channelBands.T + channelBands.R
+};
+
+const bandDividers = [
+    (channelOffsets.R + channelOffsets.T) / 2,
+    (channelOffsets.T + channelOffsets.V) / 2,
+    (channelOffsets.V + channelOffsets.A) / 2
+];
+
+const waveformTop = channelOffsets.R + channelBands.R;
+
+const waveformBandPlugin = {
+    id: 'waveformBandPlugin',
+    afterDraw(chart) {
+        const { ctx, chartArea: { top, bottom, left, right }, scales: { x, y } } = chart;
+
+        const drawVerticalLine = (value, color) => {
+            const xPos = x.getPixelForValue(value);
+            ctx.save();
+            ctx.beginPath();
+            ctx.setLineDash([4, 4]);
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = color;
+            ctx.moveTo(xPos, top);
+            ctx.lineTo(xPos, bottom);
+            ctx.stroke();
+            ctx.restore();
+        };
+
+        const drawDividerLine = (value) => {
+            const yPos = y.getPixelForValue(value);
+            ctx.save();
+            ctx.beginPath();
+            ctx.lineWidth = 0.7;
+            ctx.strokeStyle = '#9ca3af';
+            ctx.moveTo(left, yPos);
+            ctx.lineTo(right, yPos);
+            ctx.stroke();
+            ctx.restore();
+        };
+
+        const drawBandLabel = (label, value) => {
+            const yPos = y.getPixelForValue(value);
+            ctx.save();
+            ctx.fillStyle = '#111827';
+            ctx.font = '600 11px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, left + 4, yPos);
+            ctx.restore();
+        };
+
+        drawVerticalLine(seismicOnset, '#003f8a');
+        drawVerticalLine(airOnset, '#8a0000');
+
+        bandDividers.forEach(drawDividerLine);
+
+        drawBandLabel('R', channelOffsets.R);
+        drawBandLabel('T', channelOffsets.T);
+        drawBandLabel('V', channelOffsets.V);
+        drawBandLabel('A', channelOffsets.A);
+    }
+};
+
+const waveformPoints = (series, offset) => timeValues.map((t, i) => ({ x: t, y: series[i] + offset }));
+
+new Chart(document.getElementById('waveformChart'), {
+    type: 'line',
+    data: {
+        datasets: [
+            { label: 'Radial', data: waveformPoints(radial, channelOffsets.R), borderColor: '#0d6efd', borderWidth: 1.3, pointRadius: 0, tension: 0, fill: false },
+            { label: 'Transverse', data: waveformPoints(transverse, channelOffsets.T), borderColor: '#dc3545', borderWidth: 1.3, pointRadius: 0, tension: 0, fill: false },
+            { label: 'Vertical', data: waveformPoints(vertical, channelOffsets.V), borderColor: '#198754', borderWidth: 1.3, pointRadius: 0, tension: 0, fill: false },
+            { label: 'Air', data: waveformPoints(air, channelOffsets.A), borderColor: '#000000', borderWidth: 1.3, pointRadius: 0, tension: 0, fill: false }
+        ]
+    },
+    options: {
+        parsing: false,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+            x: { type: 'linear', title: { display: true, text: 'Time (seconds)' }, grid: { lineWidth: 0.4 } },
+            y: { display: false, suggestedMin: 0, suggestedMax: waveformTop, grid: { lineWidth: 0.25, color: '#e5e7eb' } }
+        }
+    },
+    plugins: [waveformBandPlugin]
+});
+
+const rPoints = @(Html.Raw(JsonSerializer.Serialize(Model.FrequencyPlotData.RPoints.Select(p => new { x = p.Frequency, y = p.Velocity }))));
+const tPoints = @(Html.Raw(JsonSerializer.Serialize(Model.FrequencyPlotData.TPoints.Select(p => new { x = p.Frequency, y = p.Velocity }))));
+const vPoints = @(Html.Raw(JsonSerializer.Serialize(Model.FrequencyPlotData.VPoints.Select(p => new { x = p.Frequency, y = p.Velocity }))));
+const usbmCurve = @(Html.Raw(JsonSerializer.Serialize(Model.FrequencyPlotData.USBMCurve.Select(p => new { x = p.Frequency, y = p.Velocity }))));
+
+new Chart(document.getElementById('usbmChart'), {
+    type: 'scatter',
+    data: {
+        datasets: [
+            { label: 'Radial', data: rPoints, pointRadius: 3, pointBackgroundColor: '#0d6efd' },
+            { label: 'Transverse', data: tPoints, pointRadius: 3, pointBackgroundColor: '#dc3545' },
+            { label: 'Vertical', data: vPoints, pointRadius: 3, pointBackgroundColor: '#198754' },
+            { label: 'USBM Limit', data: usbmCurve, showLine: true, borderColor: '#000000', borderWidth: 1, pointRadius: 0 }
+        ]
+    },
+    options: {
+        parsing: false,
+        maintainAspectRatio: false,
+        plugins: { legend: { labels: { boxWidth: 10, font: { size: 10 } } } },
+        scales: {
+            x: { type: 'logarithmic', title: { display: true, text: 'Frequency (Hz)' }, min: 1, max: 100, grid: { lineWidth: 0.4 } },
+            y: { type: 'logarithmic', title: { display: true, text: 'Velocity (in/s)' }, min: 0.1, max: 3, grid: { lineWidth: 0.4 } }
+        }
+    }
+});
+</script>
+}
